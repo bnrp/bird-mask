@@ -50,8 +50,8 @@ def load_train_test(dataset_path):
     # Load in the train / test split
     train_images, test_images = nabirds.load_train_test_split(dataset_path)
 
-    print(train_images)
-    print(test_images)
+    #print(train_images)
+    #print(test_images)
 
     return train_images, test_images
 

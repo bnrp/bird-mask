@@ -11,7 +11,7 @@ import math
 
 
 class nabirdsDataset(Dataset):
-    def __init__(self, dataset_path, image_path, ignore=[]):
+    def __init__(self, dataset_path, image_path, ignore=[], general=True):
         self.dataset_path = dataset_path
         self.image_path = image_path
         self.image_paths = self.load_image_paths()
@@ -22,7 +22,7 @@ class nabirdsDataset(Dataset):
         self.image_parts = self.load_part_annotations()
         self.image_class_labels = self.load_image_labels()
         self.class_names = self.load_class_names()
-
+        self.general = general
         self.class_names_rectified, self.class_names_dict, self.image_class_labels_rectified, self.image_class_labels_dict = self.rectify_class_names()
 
         if ignore != []:
@@ -34,7 +34,7 @@ class nabirdsDataset(Dataset):
 
         self.length = len(self.image_paths)
         self.classes = len(list(self.class_names_rectified['class_id'])) 
-        
+        self.general_classes = 22 
 
     def rectify_class_names(self):
         unique_ids = np.unique(self.image_class_labels['class_id'].to_numpy()).astype(str)
@@ -92,8 +92,10 @@ class nabirdsDataset(Dataset):
 
     
     def load_image_labels(self):
-        colnames = ['id', 'class_id']
+        colnames = ['id', 'class_id', 'general_class_id']
         labels = pd.read_csv(self.dataset_path + 'image_class_labels.txt', sep=' ', names=colnames, header=None)
+        labels.sort_values('class_id', inplace=True, ignore_index=True)
+        labels['general_class_id'] = pd.read_csv('./labels/general_class_labels.txt', header=None)
 
         return labels
 
@@ -122,7 +124,10 @@ class nabirdsDataset(Dataset):
             idx = idx.tolist()
         
         img_path = self.image_path + self.image_paths['path'].values[idx]
-        label = self.image_class_labels_rectified['rectified_id'].values[idx]
+        if self.general:
+            label = self.image_class_labels_rectified['general_class_id'].values[idx]
+        else:
+            label = self.image_class_labels_rectified['rectified_id'].values[idx]
 
         id = self.image_paths['id'].values[idx]
         bbox_data = np.where(self.image_bboxes_np == id)[0][0]
@@ -134,7 +139,7 @@ class nabirdsDataset(Dataset):
         y2 = np.max((bbox_data[1], bbox_data[3]))
 
         tf = transforms.Compose([
-            lambda x: Image.open(x).convert('RGB').crop((x1, y1, x2, y2)).resize((224,224)),
+            lambda x: Image.open(x).convert('RGB').crop((x1, y1, x2, y2)).resize((32,32)),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
@@ -142,8 +147,12 @@ class nabirdsDataset(Dataset):
         img = tf(img_path)
         #img = img.unsqueeze(0)
         #img = img.unsqueeze(0)
-        empty_label = np.zeros((self.classes,1))
-        empty_label[label] = 1
+        if self.general:
+            empty_label = np.zeros((self.general_classes,1))
+            empty_label[int(label-1)] = 1
+        else:
+            empty_label = np.zeros((self.classes,1))
+            empty_label[label] = 1
         label = torch.tensor(empty_label)
         #label = torch.tensor(label)
 

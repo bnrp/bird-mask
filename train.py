@@ -11,6 +11,7 @@ from bird_mask_net import BasicBlock, ResNet, BetterBlock, ResNetTransfer
 from train_utils import train, validate
 from utils import load_data, load_train_test
 from nabirdsDataset import nabirdsDataset
+from simple_conv_net import MyModel
 
 dataset_path = 'nabirds-data/nabirds/'
 image_path = dataset_path + 'images/'
@@ -23,11 +24,11 @@ torch.backends.cudnn.benchmark = True
 np.random.seed(seed)
 random.seed(seed)
 
-validate_mod = 1
+validate_mod = 99
 
 epochs = 100
-batch_size = 16
-learning_rate = 0.001
+batch_size = 128
+learning_rate = 0.1
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 train_images, test_images = load_train_test(dataset_path)
@@ -40,9 +41,10 @@ valid_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True, num_wo
 
 
 #model = ResNet(img_channels=3, num_layers=50, block=BetterBlock, num_classes=555)
-container = ResNetTransfer(backbone="resnet50", load_pretrained=True, classes=555) 
-container.fine_tune(what="NEW_LAYERS")
-model = container.model
+model = MyModel()
+#container = ResNetTransfer(backbone="resnet50", load_pretrained=True, classes=555) 
+#container.fine_tune(what="NEW_LAYERS")
+#model = container.model
 model.to(device)
 
 
@@ -53,7 +55,7 @@ total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires
 print(f"{total_trainable_params:,} total trainable parameters.")
 
 #optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
-optimizer = optim.Adam(model.parameters(), 0.001, amsgrad=True, weight_decay=0.0001)
+optimizer = optim.Adam(model.parameters(), 0.01, amsgrad=True, weight_decay=0.0001)
 criterion = nn.CrossEntropyLoss()
 
 #print(torch.cuda.memory_summary())

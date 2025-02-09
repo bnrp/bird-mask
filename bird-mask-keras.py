@@ -37,12 +37,12 @@ def init_model(include_top=False, weights="imagenet", input_tensor=None, input_s
 
 def main():
     # Model Variables
-    batch_size = 16
+    batch_size = 32
     img_size = (256, 256)
     input_size = (256, 256, 3)
     seed = 0
     split = 0.8
-    lr = 1e-3
+    lr = 1e-6
     epochs = 100
 
 
@@ -70,6 +70,7 @@ def main():
                 weights=None,
                 input_shape=input_size,
                 classes=num_classes,
+                pooling="avg",
             )
 
     #for layer in res_model.layers[:143]:

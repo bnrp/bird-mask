@@ -1,7 +1,8 @@
 import nabirds
 from nabirdsDataset import nabirdsDataset
 import utils
-import train_utils
+from utils import load_train_test, timer, load_data
+from train_utils import train, validate
 
 import time
 
@@ -107,6 +108,9 @@ class ResNet(nn.Module):
         elif num_layers == 50:
             layers = [3, 4, 6, 3]
             self.expansion = 4
+        elif num_layers == 5:
+            layers = [2,2, 2, 2]
+            self.expansion = 1
 
         self.in_channels = 64
 
@@ -232,25 +236,21 @@ def main():
     train_data = nabirdsDataset(dataset_path, image_path, ignore=test_images)
     test_data = nabirdsDataset(dataset_path, image_path, ignore=train_images)
     
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
-    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True, num_workers=4)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
     # Create model
-    model_18 = ResNet(num_classes=train_data.classes)
+    model_18 = ResNet(num_classes=train_data.classes, img_channels=3, num_layers=5, block=BetterBlock)
     model_18 = model_18.to(device)
 
     # Train
     criterion = nn.CrossEntropyLoss().to(device)
-    optimizer = optim.SGD(model_18.parameters(), lr=lr)
-    train(model_18, epochs, train_data, test_data, criterion, optimizer)
+    optimizer = torch.optim.Adam(model_18.parameters(), lr=lr)
+    train(model_18, epochs, train_loader, criterion, optimizer)
 
     #model_18.load_state_dict(torch.load('best.mdl'))
     #evaluate(model_18, train_loader)
 
 
 if __name__ == '__main__':
-    tensor = torch.rand([1,3,224,224])
-    model = ResNet(img_channels=3, num_layers=50, block=BetterBlock, num_classes=555)
-    print(model)
-
-    output = model(tensor)
+    main()

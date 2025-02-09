@@ -144,7 +144,7 @@ def train(model, epochs, train_loader, test_loader, criterion, optimizer):
             
             b = list(model.parameters(),clone())[0]
 
-            print(torch.equal(a.data, b.data))
+            #print(torch.equal(a.data, b.data))
                         
 
             if (sample % 1000) == 0:
