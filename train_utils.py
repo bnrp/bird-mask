@@ -37,6 +37,7 @@ def train(model, trainloader, optimizer, criterion, device):
         sched.step()
 
     epoch_loss = train_running_loss / counter
+    print('-'*50)
     print('Correct Train:')
     print(train_running_correct)
     print('Total Train:')
