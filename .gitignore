@@ -1,0 +1,6 @@
+# Ignore NA-birds dataset
+!nabirds-data/
+nabirds-data/*
+resnet.py
+!vision_transformer/
+vision_transformer/*

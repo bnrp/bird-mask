@@ -12,7 +12,7 @@ from train_utils import train, validate
 from utils import load_data, load_train_test
 from nabirdsDataset import nabirdsDataset
 from simple_conv_net import MyModel
-from resnet import resnet110 
+from resnet import resnet20 
 
 dataset_path = 'nabirds-data/nabirds/'
 image_path = dataset_path + 'images/'
@@ -28,31 +28,33 @@ random.seed(seed)
 validate_mod = 99
 
 epochs = 100
-batch_size = 256
-learning_rate = 0.005
+batch_size = 32
+learning_rate = 0.05
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 train_images, test_images = load_train_test(dataset_path)
+#print(len(train_images))
+#print(len(test_images))
 
-train_data = nabirdsDataset(dataset_path, image_path, ignore=test_images)
-test_data = nabirdsDataset(dataset_path, image_path, ignore=train_images)
+train_data = nabirdsDataset(dataset_path, image_path, ignore=test_images, general=False)
+test_data = nabirdsDataset(dataset_path, image_path, ignore=train_images, general=False)
 
-classes = train_data.image_class_labels_rectified['general_class_id']
+classes = train_data.image_class_labels_rectified['rectified_id']
 unique = classes.value_counts()
 unique = unique.sort_index()
+classes = (unique.index.values[-1] + 1) 
 weights = unique.to_numpy()
 weights = weights / np.sum(weights)
-weights = weights * 22
+weights = weights * classes 
 weights = torch.tensor(weights).to(device)
 #print(weights)
-
 
 train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=4)
 valid_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True, num_workers=4)
 
 
 #model = ResNet(img_channels=3, num_layers=50, block=BetterBlock, num_classes=555)
-model = resnet110(num_classes=22)
+model = resnet20(num_classes=555)
 #container = ResNetTransfer(backbone="resnet50", load_pretrained=True, classes=555) 
 #container.fine_tune(what="NEW_LAYERS")
 #model = container.model

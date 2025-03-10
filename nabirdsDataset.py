@@ -139,7 +139,7 @@ class nabirdsDataset(Dataset):
         y2 = np.max((bbox_data[1], bbox_data[3]))
 
         tf = transforms.Compose([
-            lambda x: Image.open(x).convert('RGB').crop((x1, y1, x2, y2)).resize((32,32)),
+            lambda x: Image.open(x).convert('RGB').crop((x1, y1, x2, y2)).resize((256,256)),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])

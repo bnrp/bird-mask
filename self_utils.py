@@ -1,6 +1,10 @@
 import nabirds
 from nabirdsDataset import nabirdsDataset
 import time
+import tensorflow as tf
+
+dataset_path = 'nabirds-data/nabirds/'
+image_path = dataset_path + 'images/'
 
 
 def load_data(dataset_path, image_path):
@@ -66,3 +70,27 @@ def timer(func):
         return result
 
     return timer_wrap()
+
+
+def tf_load_images(dir=image_path, labels="inferred", batch_size=32, img_size=(256, 256), seed=0, split=0.8):
+    training, validation = tf.keras.preprocessing.image_dataset_from_directory(
+                directory = dir,
+                labels = labels,
+                label_mode = "categorical",
+                class_names = None,
+                color_mode = "rgb",
+                batch_size = batch_size,
+                image_size = img_size,
+                shuffle = True, 
+                seed = seed,
+                validation_split = split,
+                subset = "both",
+                interpolation = "bilinear",
+                follow_links = False,
+                crop_to_aspect_ratio = False,
+                pad_to_aspect_ratio = False,
+                data_format = None,
+                verbose = True,
+            )
+
+    return training, validation
